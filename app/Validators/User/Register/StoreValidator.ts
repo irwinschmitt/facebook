@@ -1,12 +1,15 @@
 import { schema, rules } from "@ioc:Adonis/Core/Validator";
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 
-export default class AuthStoreValidator {
+export default class UserRegisterStoreValidator {
   constructor(protected ctx: HttpContextContract) {}
 
   public schema = schema.create({
-    email: schema.string({ trim: true }, [rules.email()]),
-    password: schema.string(),
+    email: schema.string({ trim: true }, [
+      rules.email(),
+      rules.unique({ table: "users", column: "email" }),
+    ]),
+    redirectUrl: schema.string({ trim: true }),
   });
 
   public messages = {};
