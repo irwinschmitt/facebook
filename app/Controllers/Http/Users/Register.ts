@@ -3,25 +3,28 @@ import { StoreValidator, UpdateValidator } from "App/Validators/User/Register";
 import { User, UserKey } from "App/Models";
 import faker from "faker";
 import Mail from "@ioc:Adonis/Addons/Mail";
-import { Request, Response } from "@adonisjs/http-server/build/standalone";
-
+import Database from "@ioc:Adonis/Lucid/Database";
 export default class UserRegisterController {
   public async store({ request }: HttpContextContract) {
-    const { email, redirectUrl } = await request.validate(StoreValidator);
+    await Database.transaction(async (trx) => {
+      const { email, redirectUrl } = await request.validate(StoreValidator);
 
-    const user = await User.create({ email });
-    await user.save();
+      const user = new User();
+      user.useTransaction(trx);
+      user.email = email;
+      await user.save();
 
-    const key = faker.datatype.uuid() + new Date().getTime();
-    user.related("keys").create({ key });
+      const key = faker.datatype.uuid() + new Date().getTime();
+      user.related("keys").create({ key });
 
-    const link = `${redirectUrl.replace(/\/$/, "")}/${key}`;
+      const link = `${redirectUrl.replace(/\/$/, "")}/${key}`;
 
-    await Mail.send((message) => {
-      message.to(email);
-      message.from("contato@facebook.com", "Facebook");
-      message.subject("Ative sua conta");
-      message.htmlView("emails/register", { link });
+      await Mail.send((message) => {
+        message.to(email);
+        message.from("contato@facebook.com", "Facebook");
+        message.subject("Ative sua conta");
+        message.htmlView("emails/register", { link });
+      });
     });
   }
 
