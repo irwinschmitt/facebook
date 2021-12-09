@@ -7,5 +7,5 @@ Route.get("/", async () => {
 });
 
 Route.get("/user-register", async ({ view }) => {
-  return view.render("emails/register");
+  return view.render("emails/confirm-email");
 });

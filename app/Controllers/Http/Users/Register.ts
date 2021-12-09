@@ -23,16 +23,15 @@ export default class UserRegisterController {
         message.to(email);
         message.from("contato@facebook.com", "Facebook");
         message.subject("Ative sua conta");
-        message.htmlView("emails/register", { link });
+        message.htmlView("emails/confirm-email", { link });
       });
     });
   }
 
   public async show({ params }: HttpContextContract) {
     const userKey = await UserKey.findByOrFail("key", params.key);
-    const user = await userKey.related("user").query().firstOrFail();
-
-    return user;
+    userKey.load("user");
+    return userKey.user;
   }
 
   public async update({ request, response }: HttpContextContract) {
